@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sort, Count &amp; Graph! — Data &amp; Charts</title>
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+
+  body {
+    margin: 0;
+    padding: 18px 14px 44px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', system-ui, sans-serif;
+    background: linear-gradient(165deg, #e9f6ff 0%, #fff8e8 100%);
+    color: #2f3e4d;
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* =========================================================
+     INTRO SCREEN
+  ========================================================= */
+  .intro-screen {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 4px 30px;
+    text-align: center;
+  }
+
+  .intro-screen h1 {
+    font-size: clamp(24px, 5vw, 38px);
+    color: #1f6fb2;
+    margin: 6px 0 8px;
+  }
+  .intro-sub {
+    font-size: clamp(15px, 2.8vw, 19px);
+    color: #5b6b7c;
+    margin: 0 0 22px;
+  }
+
+  .intro-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 680px) {
+    .intro-cards { grid-template-columns: 1fr; }
+  }
+
+  .intro-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 22px 20px 20px;
+    box-shadow: 0 6px 0 #dbe7f2, 0 10px 24px rgba(31, 111, 178, .10);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .intro-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 8px;
+    background: #ffd447;
+  }
+  .intro-card.chart-card::before { background: #7ed957; }
+  .intro-card.try-card::before { background: #ff9ec7; }
+
+  .card-emoji {
+    font-size: 54px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .intro-card h2 {
+    font-size: clamp(19px, 3.4vw, 23px);
+    color: #1f6fb2;
+    margin: 0 0 8px;
+  }
+  .intro-card p {
+    font-size: clamp(14px, 2.5vw, 16px);
+    color: #3d4f61;
+    margin: 0 0 12px;
+    line-height: 1.45;
+  }
+  .intro-card p.small {
+    font-size: 14px;
+    color: #7b8ea1;
+    margin: 10px 0 0;
+  }
+
+  .example-box {
+    background: #fff9e8;
+    border: 3px dashed #ffd447;
+    border-radius: 16px;
+    padding: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .example-box > span:first-child {
+    font-size: 30px;
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+  .example-label {
+    font-size: 17px;
+    font-weight: bold;
+    color: #7a4f00;
+  }
+
+  /* Mini chart illustration */
+  .mini-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 14px;
+    height: 100px;
+    padding: 0 8px 6px;
+    border-bottom: 3px solid #cbd5e1;
+    border-left: 3px solid #cbd5e1;
+    margin: 4px 12px 0;
+  }
+  .mini-bar {
+    width: 34px;
+    border-radius: 8px 8px 0 0;
+  }
+  .mini-chart-labels {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    font-size: 22px;
+    margin-top: 6px;
+  }
+
+  /* Try-it demo */
+  .try-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    margin: 10px 0 16px;
+  }
+  .fruit-btn {
+    font-family: inherit;
+    font-size: 34px;
+    line-height: 1;
+    width: 66px;
+    height: 66px;
+    padding: 0;
+    border: 3px solid #e3ecf5;
+    border-radius: 18px;
+    background: #f8fbff;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, background .15s;
+    box-shadow: 0 4px 0 #dbe7f2;
+  }
+  .fruit-btn:hover { background: #eaf4ff; transform: translateY(-2px); }
+  .fruit-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #dbe7f2; }
+
+  .try-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 26px;
+    height: 150px;
+    padding: 0 10px 4px;
+    border-bottom: 3px solid #cbd5e1;
+    border-left: 3px solid #cbd5e1;
+    margin: 0 22px;
+  }
+  .try-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+  }
+  .try-num {
+    font-size: 17px;
+    font-weight: bold;
+    color: #5b6b7c;
+    height: 22px;
+    line-height: 22px;
+  }
+  .try-bar {
+    width: 34px;
+    border-radius: 8px 8px 0 0;
+    transition: height .4s cubic-bezier(.34, 1.56, .64, 1);
+  }
+
+  /* Start button */
+  .btn-start {
+    margin-top: 26px;
+    font-family: inherit;
+    font-size: clamp(20px, 3.4vw, 24px);
+    font-weight: bold;
+    padding: 16px 38px;
+    border: none;
+    border-radius: 20px;
+    background: #ffd447;
+    color: #7a4f00;
+    cursor: pointer;
+    box-shadow: 0 7px 0 #e0b32f;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn-start:active { transform: translateY(5px); box-shadow: 0 2px 0 #e0b32f; }
+  .btn-start:hover { background: #ffde6b; }
+
+  /* =========================================================
+     GAME SCREEN (same as before)
+  ========================================================= */
+  .app { max-width: 900px; margin: 0 auto; }
+
+  h1.game-title {
+    font-size: clamp(22px, 4.5vw, 34px);
+    text-align: center;
+    margin: 0 0 10px;
+    color: #1f6fb2;
+  }
+
+  .setbar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 0 6px;
+  }
+  .setpill {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 19px;
+    background: #fff;
+    color: #9ab0c4;
+    border: 3px solid #dbe7f2;
+    box-shadow: 0 3px 0 #dbe7f2;
+    transition: transform .2s, background .2s, color .2s, border-color .2s, box-shadow .2s;
+  }
+  .setpill.active {
+    background: #ffd447;
+    color: #7a4f00;
+    border-color: #e0b32f;
+    box-shadow: 0 3px 0 #e0b32f;
+    transform: scale(1.12);
+  }
+  .setpill.done {
+    background: #e6f7ea;
+    color: #2e7d32;
+    border-color: #a5d6a7;
+    box-shadow: 0 3px 0 #a5d6a7;
+  }
+
+  .setinfo {
+    text-align: center;
+    font-size: 14px;
+    color: #8aa0b4;
+    margin: 0 0 12px;
+    letter-spacing: .3px;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: clamp(14px, 2.6vw, 18px);
+    color: #5b6b7c;
+    margin: 0 0 18px;
+    min-height: 26px;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 16px;
+  }
+  @media (max-width: 680px) {
+    .board { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 22px;
+    padding: 14px;
+    box-shadow: 0 6px 0 #dbe7f2, 0 10px 24px rgba(31, 111, 178, .10);
+  }
+
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: #7b8ea1;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+  }
+
+  .pile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-content: flex-start;
+    min-height: 180px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .item {
+    font-size: 32px;
+    line-height: 1;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    flex: 0 0 auto;
+    border: 3px solid #e3ecf5;
+    border-radius: 16px;
+    background: #f8fbff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .15s, box-shadow .15s, border-color .15s, background .15s;
+    user-select: none;
+  }
+  .item:hover { transform: translateY(-3px); }
+  .item:active { transform: scale(.94); }
+  .item.selected {
+    border-color: #1f6fb2;
+    background: #e3f2ff;
+    box-shadow: 0 0 0 4px rgba(31, 111, 178, .18);
+    transform: translateY(-3px) scale(1.06);
+  }
+
+  .item.dense {
+    width: 42px;
+    height: 42px;
+    font-size: 24px;
+    border-radius: 12px;
+    border-width: 2px;
+  }
+  .item.dense.selected { box-shadow: 0 0 0 3px rgba(31, 111, 178, .20); }
+
+  .item.small {
+    width: 42px;
+    height: 42px;
+    font-size: 24px;
+    border-radius: 12px;
+    border-width: 2px;
+  }
+  .item.small.dense {
+    width: 34px;
+    height: 34px;
+    font-size: 19px;
+    border-radius: 10px;
+  }
+
+  .empty {
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    color: #9ab0c4;
+    padding: 40px 0;
+  }
+
+  .bins {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .bin {
+    border: 3px dashed #cbd5e1;
+    border-radius: 18px;
+    padding: 8px;
+    min-height: 112px;
+    cursor: pointer;
+    transition: background .15s, transform .15s;
+  }
+  .bin:hover { background: #f6fbff; transform: translateY(-2px); }
+  .bin:active { transform: scale(.98); }
+
+  .bin-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #5b6b7c;
+  }
+  .bin-emoji { font-size: 20px; }
+
+  .bin-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-height: 210px;
+    overflow-y: auto;
+  }
+
+  .actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 22px 0;
+  }
+
+  .btn {
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 12px 22px;
+    border-radius: 16px;
+    border: none;
+    cursor: pointer;
+    background: #fff;
+    color: #1f6fb2;
+    box-shadow: 0 5px 0 #cfe0ee;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #cfe0ee; }
+
+  .btn.primary {
+    background: #ffd447;
+    color: #7a4f00;
+    box-shadow: 0 5px 0 #e0b32f;
+  }
+  .btn.primary:active { box-shadow: 0 1px 0 #e0b32f; }
+
+  .btn.green {
+    background: #7ed957;
+    color: #1f4d0f;
+    box-shadow: 0 5px 0 #5cb63a;
+  }
+  .btn.green:active { box-shadow: 0 1px 0 #5cb63a; }
+
+  .count-card { margin-top: 16px; }
+
+  .count-row {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 8px;
+    border-bottom: 2px dashed #eef4fa;
+    border-radius: 12px;
+    transition: background .2s;
+  }
+  .count-row:last-child { border-bottom: none; }
+
+  @media (max-width: 680px) {
+    .count-row { grid-template-columns: 1fr; justify-items: start; }
+  }
+
+  .count-label {
+    font-weight: bold;
+    font-size: 16px;
+    color: #3d4f61;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .count-fruits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    font-size: 24px;
+    line-height: 1;
+    min-height: 30px;
+    max-width: 100%;
+  }
+
+  .num-input {
+    font-family: inherit;
+    font-size: 26px;
+    font-weight: bold;
+    width: 88px;
+    height: 56px;
+    text-align: center;
+    border: 3px solid #cbd5e1;
+    border-radius: 16px;
+    background: #f8fbff;
+    color: #1f6fb2;
+    outline: none;
+    transition: border-color .15s, background .15s, box-shadow .15s;
+  }
+  .num-input::placeholder { color: #b9c9d8; }
+  .num-input:focus {
+    border-color: #1f6fb2;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(31, 111, 178, .15);
+  }
+  .num-input.correct {
+    border-color: #4caf50;
+    background: #f1fbf2;
+    color: #2e7d32;
+  }
+  .num-input.wrong {
+    border-color: #ef5350;
+    background: #fff5f5;
+    animation: wobble .5s ease-in-out;
+  }
+  .num-input:disabled { opacity: 1; }
+
+  .count-row.wrong { background: #fff0f0; }
+
+  @keyframes wobble {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .graph-card { margin-top: 16px; }
+
+  .plot {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: end;
+    height: 250px;
+    padding: 0 6px;
+    border-left: 3px solid #cbd5e1;
+    border-bottom: 3px solid #cbd5e1;
+    background: #fbfdff;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+  }
+
+  .count {
+    font-size: 20px;
+    font-weight: bold;
+    color: #5b6b7c;
+    height: 26px;
+    line-height: 26px;
+  }
+
+  .bar {
+    width: clamp(40px, 9vw, 64px);
+    border-radius: 12px 12px 0 0;
+    transition: height .8s cubic-bezier(.34, 1.56, .64, 1);
+  }
+
+  .labels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 8px 6px 0 9px;
+  }
+  .labels div {
+    text-align: center;
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  .graph-note {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 16px;
+    color: #1f6fb2;
+    font-weight: bold;
+  }
+
+  .finale {
+    margin-top: 16px;
+    text-align: center;
+    padding: 30px 18px 34px;
+  }
+  .finale-emoji { font-size: 56px; line-height: 1.2; }
+  .finale p {
+    font-size: 19px;
+    color: #3d4f61;
+    margin: 10px 0 22px;
+  }
+</style>
+</head>
+<body>
+
+<!-- =========================================================
+     INTRO SCREEN
+========================================================== -->
+<div class="intro-screen" id="introScreen">
+  <h1>🍎 Welcome to Sort &amp; Graph! 📊</h1>
+  <p class="intro-sub">Let's learn about <strong>data</strong> and <strong>charts</strong> first! 🎈</p>
+
+  <div class="intro-cards">
+    <!-- Card 1: What is data? -->
+    <div class="intro-card data-card">
+      <div class="card-emoji">🧺</div>
+      <h2>What is Data?</h2>
+      <p>Data is <strong>information</strong>. When we count things, that's data!</p>
+      <div class="example-box">
+        <span>🍎🍎🍎</span>
+        <span class="example-label">= 3 apples</span>
+      </div>
+      <p class="small">Counting = collecting data! 🎯</p>
+    </div>
+
+    <!-- Card 2: What is a chart? -->
+    <div class="intro-card chart-card">
+      <div class="card-emoji">📈</div>
+      <h2>What is a Chart?</h2>
+      <p>A chart is a <strong>picture</strong> of our data. It shows us what we have more of!</p>
+      <div class="mini-chart">
+        <div class="mini-bar" style="height: 55px; background: #ef5350;"></div>
+        <div class="mini-bar" style="height: 40px; background: #fbc02d;"></div>
+        <div class="mini-bar" style="height: 85px; background: #9c5bd6;"></div>
+      </div>
+      <div class="mini-chart-labels">
+        <span>🍎</span><span>🍌</span><span>🍇</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: Try it yourself -->
+  <div class="intro-card try-card">
+    <h2>Try it! 🎮</h2>
+    <p>Click a fruit and watch the chart grow!</p>
+    <div class="try-buttons">
+      <button class="fruit-btn" data-fruit="apple" aria-label="Add an apple">🍎</button>
+      <button class="fruit-btn" data-fruit="banana" aria-label="Add a banana">🍌</button>
+      <button class="fruit-btn" data-fruit="grape" aria-label="Add some grapes">🍇</button>
+    </div>
+    <div class="try-chart" id="tryChart"></div>
+  </div>
+
+  <button class="btn-start" id="startBtn">Let's Play! ▶</button>
+</div>
+
+<!-- =========================================================
+     GAME SCREEN
+========================================================== -->
+<div class="app" id="gameScreen" hidden>
+  <h1 class="game-title">🍎 Sort, Count &amp; Graph! 📊</h1>
+
+  <div class="setbar" id="setbar"></div>
+  <p class="setinfo" id="setinfo"></p>
+  <p class="hint" id="hint">Tap a fruit, then tap a basket. 🍎➡️🧺</p>
+
+  <div class="board" id="board">
+    <section class="card">
+      <h2>Mixed Up!</h2>
+      <div class="pile" id="pile"></div>
+    </section>
+
+    <section class="card">
+      <h2>Baskets</h2>
+      <div class="bins" id="bins"></div>
+    </section>
+  </div>
+
+  <div class="actions" id="actions">
+    <button class="btn primary" id="graphBtn">✅ Check &amp; Graph</button>
+    <button class="btn" id="newBtn">🔄 Re-sort</button>
+    <button class="btn green" id="nextBtn" hidden>Next Set ▶</button>
+  </div>
+
+  <section class="card count-card" id="countCard" hidden>
+    <h2>Count the fruits and write the number! ✏️</h2>
+    <div id="countRows"></div>
+  </section>
+
+  <section class="card graph-card" id="graphCard" hidden>
+    <h2 id="graphTitle">Our Graph</h2>
+    <div class="plot" id="plot"></div>
+    <div class="labels" id="labels"></div>
+    <p class="graph-note" id="graphNote"></p>
+  </section>
+
+  <section class="card finale" id="finaleCard" hidden>
+    <div class="finale-emoji">🎉🏆🎉</div>
+    <p>You sorted, counted and graphed all 4 sets. Amazing work!</p>
+    <button class="btn primary" id="playAgainBtn">🎈 Play Again</button>
+  </section>
+</div>
+
+<script>
+  /* =========================================================
+     INTRO: try-it chart demo
+  ========================================================= */
+  const DEMO_MAX = 10;
+  const DEMO_COLORS = { apple: '#ef5350', banana: '#fbc02d', grape: '#9c5bd6' };
+  const demoCounts = { apple: 0, banana: 0, grape: 0 };
+  const tryChartEl = document.getElementById('tryChart');
+
+  function renderTryChart() {
+    tryChartEl.innerHTML = '';
+    Object.keys(demoCounts).forEach(fruit => {
+      const count = demoCounts[fruit];
+
+      const col = document.createElement('div');
+      col.className = 'try-col';
+
+      const num = document.createElement('div');
+      num.className = 'try-num';
+      num.textContent = count;
+
+      const bar = document.createElement('div');
+      bar.className = 'try-bar';
+      bar.style.background = DEMO_COLORS[fruit];
+      bar.style.height = (count * (130 / DEMO_MAX)) + 'px';
+
+      col.appendChild(num);
+      col.appendChild(bar);
+      tryChartEl.appendChild(col);
+    });
+  }
+
+  document.querySelectorAll('.fruit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fruit = btn.dataset.fruit;
+      if (demoCounts[fruit] < DEMO_MAX) {
+        demoCounts[fruit]++;
+        renderTryChart();
+      }
+    });
+  });
+
+  renderTryChart(); // show empty bars initially
+
+  /* Show the game when the child taps Let's Play */
+  document.getElementById('startBtn').addEventListener('click', () => {
+    document.getElementById('introScreen').hidden = true;
+    document.getElementById('gameScreen').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    newSet();   // (defined below)
+  });
+
+  /* =========================================================
+     GAME CODE
+  ========================================================= */
+  const CATS = [
+    { id: 'apple',  emoji: '🍎', name: 'Apples',  color: '#ef5350' },
+    { id: 'banana', emoji: '🍌', name: 'Bananas', color: '#fbc02d' },
+    { id: 'grape',  emoji: '🍇', name: 'Grapes',  color: '#9c5bd6' },
+    { id: 'orange', emoji: '🍊', name: 'Oranges', color: '#fb8c00' }
+  ];
+  const CAT_MAP = {};
+  CATS.forEach(c => CAT_MAP[c.id] = c);
+
+  const SET_TOTALS = [10, 25, 30, 35];
+  const TOTAL_SETS = SET_TOTALS.length;
+
+  const pileEl      = document.getElementById('pile');
+  const binsEl      = document.getElementById('bins');
+  const hintEl      = document.getElementById('hint');
+  const setbarEl    = document.getElementById('setbar');
+  const setinfoEl   = document.getElementById('setinfo');
+  const boardEl     = document.getElementById('board');
+  const actionsEl   = document.getElementById('actions');
+  const graphBtn    = document.getElementById('graphBtn');
+  const newBtn      = document.getElementById('newBtn');
+  const nextBtn     = document.getElementById('nextBtn');
+  const countCard   = document.getElementById('countCard');
+  const countRowsEl = document.getElementById('countRows');
+  const graphCard   = document.getElementById('graphCard');
+  const graphTitle  = document.getElementById('graphTitle');
+  const plotEl      = document.getElementById('plot');
+  const labelsEl    = document.getElementById('labels');
+  const graphNote   = document.getElementById('graphNote');
+  const finaleCard  = document.getElementById('finaleCard');
+
+  let pile = [];
+  let bins = {};
+  let selected = null;
+  let typedCounts = {};
+  let currentSet = 1;
+  let completedSets = new Array(TOTAL_SETS).fill(false);
+
+  function newSet() {
+    pile = [];
+    bins = {};
+    typedCounts = {};
+    selected = null;
+    CATS.forEach(c => bins[c.id] = []);
+
+    const total = SET_TOTALS[currentSet - 1];
+
+    const perCat = CATS.map(() => 1);
+    let remaining = total - CATS.length;
+    while (remaining > 0) {
+      perCat[Math.floor(Math.random() * CATS.length)]++;
+      remaining--;
+    }
+
+    let uid = 0;
+    CATS.forEach((cat, i) => {
+      for (let n = 0; n < perCat[i]; n++) {
+        pile.push({ id: 'f' + (uid++), cat: cat.id });
+      }
+    });
+
+    for (let i = pile.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pile[i], pile[j]] = [pile[j], pile[i]];
+    }
+
+    countCard.hidden = true;
+    graphCard.hidden = true;
+    finaleCard.hidden = true;
+    boardEl.hidden = false;
+    actionsEl.hidden = false;
+    graphBtn.hidden = false;
+    newBtn.hidden = false;
+    nextBtn.hidden = true;
+
+    render();
+  }
+
+  function render() {
+    renderSetBar();
+    renderPile();
+    renderBins();
+    renderCountCard();
+  }
+
+  function renderSetBar() {
+    setbarEl.innerHTML = '';
+    for (let i = 1; i <= TOTAL_SETS; i++) {
+      const pill = document.createElement('div');
+      let cls = 'setpill';
+      if (completedSets[i - 1]) cls += ' done';
+      if (i === currentSet) cls += ' active';
+      pill.className = cls;
+      pill.textContent = completedSets[i - 1] ? '✓' : i;
+      pill.title = `Set ${i}: ${SET_TOTALS[i - 1]} fruits`;
+      setbarEl.appendChild(pill);
+    }
+    setinfoEl.textContent =
+      `Set ${currentSet} of ${TOTAL_SETS} — ${SET_TOTALS[currentSet - 1]} fruits to sort`;
+  }
+
+  function renderPile() {
+    pileEl.innerHTML = '';
+
+    if (pile.length === 0) {
+      const done = document.createElement('div');
+      done.className = 'empty';
+      done.textContent = 'All sorted! 🎉';
+      pileEl.appendChild(done);
+      return;
+    }
+
+    const dense = pile.length > 16;
+
+    pile.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'item' + (dense ? ' dense' : '') +
+                      (selected === item.id ? ' selected' : '');
+      btn.textContent = CAT_MAP[item.cat].emoji;
+      btn.setAttribute('aria-label', CAT_MAP[item.cat].name);
+
+      btn.addEventListener('click', () => {
+        selected = (selected === item.id) ? null : item.id;
+        render();
+      });
+
+      pileEl.appendChild(btn);
+    });
+  }
+
+  function renderBins() {
+    binsEl.innerHTML = '';
+    const dense = pile.length > 16 || CATS.some(c => bins[c.id].length > 9);
+
+    CATS.forEach(cat => {
+      const bin = document.createElement('div');
+      bin.className = 'bin';
+      bin.style.borderColor = cat.color;
+
+      const head = document.createElement('div');
+      head.className = 'bin-head';
+      head.innerHTML = `<span class="bin-emoji">${cat.emoji}</span><span>${cat.name}</span>`;
+      bin.appendChild(head);
+
+      const inner = document.createElement('div');
+      inner.className = 'bin-items';
+
+      bins[cat.id].forEach(item => {
+        const chip = document.createElement('button');
+        chip.className = 'item small' + (dense ? ' dense' : '');
+        chip.textContent = CAT_MAP[item.cat].emoji;
+        chip.title = 'Tap to put it back';
+        chip.addEventListener('click', e => {
+          e.stopPropagation();
+          bins[cat.id] = bins[cat.id].filter(x => x.id !== item.id);
+          pile.push(item);
+          selected = null;
+          graphCard.hidden = true;
+          render();
+        });
+        inner.appendChild(chip);
+      });
+
+      bin.appendChild(inner);
+      bin.addEventListener('click', () => dropInto(cat.id));
+      binsEl.appendChild(bin);
+    });
+  }
+
+  function renderCountCard() {
+    if (pile.length > 0 || !graphCard.hidden || !finaleCard.hidden) {
+      countCard.hidden = true;
+      updateHint();
+      return;
+    }
+
+    countCard.hidden = false;
+    countRowsEl.innerHTML = '';
+
+    CATS.forEach(cat => {
+      const row = document.createElement('div');
+      row.className = 'count-row';
+      row.dataset.cat = cat.id;
+
+      const label = document.createElement('div');
+      label.className = 'count-label';
+      label.innerHTML = `<span class="bin-emoji">${cat.emoji}</span><span>${cat.name}</span>`;
+
+      const fruits = document.createElement('div');
+      fruits.className = 'count-fruits';
+      bins[cat.id].forEach(() => {
+        const s = document.createElement('span');
+        s.textContent = cat.emoji;
+        fruits.appendChild(s);
+      });
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.inputMode = 'numeric';
+      input.autocomplete = 'off';
+      input.maxLength = 2;
+      input.className = 'num-input';
+      input.placeholder = '?';
+      input.dataset.cat = cat.id;
+      input.setAttribute('aria-label', 'How many ' + cat.name + '?');
+      input.value = typedCounts[cat.id] ?? '';
+
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^0-9]/g, '').slice(0, 2);
+        input.classList.remove('correct', 'wrong');
+        row.classList.remove('wrong');
+        typedCounts[cat.id] = input.value === '' ? undefined : Number(input.value);
+      });
+
+      row.appendChild(label);
+      row.appendChild(fruits);
+      row.appendChild(input);
+      countRowsEl.appendChild(row);
+    });
+
+    updateHint();
+  }
+
+  function updateHint() {
+    if (!finaleCard.hidden) { hintEl.textContent = ''; return; }
+    if (!graphCard.hidden) return;
+
+    if (pile.length === 0) {
+      hintEl.textContent = 'Count each basket and write the number! ✏️';
+    } else if (selected) {
+      hintEl.textContent = 'Now tap the matching basket! 👇';
+    } else {
+      hintEl.textContent = 'Tap a fruit, then tap a basket. 🍎➡️🧺';
+    }
+  }
+
+  function dropInto(catId) {
+    if (!selected) return;
+    const index = pile.findIndex(item => item.id === selected);
+    if (index === -1) return;
+
+    const item = pile.splice(index, 1)[0];
+    bins[catId].push(item);
+    selected = null;
+    graphCard.hidden = true;
+    render();
+  }
+
+  const MAX_H = 180;
+
+  function checkAndGraph() {
+    if (pile.length > 0) {
+      hintEl.textContent = 'Sort all the fruits first! 🙂';
+      return;
+    }
+
+    const inputs = [...countRowsEl.querySelectorAll('.num-input')];
+
+    const empty = inputs.filter(inp => inp.value.trim() === '');
+    if (empty.length > 0) {
+      hintEl.textContent = 'Write a number in every box! ✏️';
+      empty.forEach(inp => {
+        inp.classList.add('wrong');
+        setTimeout(() => inp.classList.remove('wrong'), 700);
+      });
+      return;
+    }
+
+    let allCorrect = true;
+    inputs.forEach(inp => {
+      const catId = inp.dataset.cat;
+      const written = Number(inp.value);
+      const real = bins[catId].length;
+      const row = inp.closest('.count-row');
+
+      if (written === real) {
+        inp.classList.add('correct');
+        inp.classList.remove('wrong');
+        row.classList.remove('wrong');
+      } else {
+        inp.classList.add('wrong');
+        inp.classList.remove('correct');
+        row.classList.add('wrong');
+        allCorrect = false;
+      }
+    });
+
+    if (!allCorrect) {
+      hintEl.textContent = 'Oops! Some numbers are not right. Count again! 🔍';
+      setTimeout(() => {
+        countRowsEl.querySelectorAll('.count-row.wrong').forEach(r => r.classList.remove('wrong'));
+        countRowsEl.querySelectorAll('.num-input.wrong').forEach(i => i.classList.remove('wrong'));
+      }, 1200);
+      return;
+    }
+
+    inputs.forEach(inp => inp.disabled = true);
+    completedSets[currentSet - 1] = true;
+    renderSetBar();
+    buildGraph();
+  }
+
+  function buildGraph() {
+    graphCard.hidden = false;
+    countCard.hidden = true;
+    graphBtn.hidden = true;
+    newBtn.hidden = true;
+
+    nextBtn.hidden = false;
+    nextBtn.textContent = (currentSet < TOTAL_SETS) ? 'Next Set ▶' : '🎉 Finish!';
+
+    graphTitle.textContent = `Our Graph — Set ${currentSet} (${SET_TOTALS[currentSet - 1]} fruits)`;
+    plotEl.innerHTML = '';
+    labelsEl.innerHTML = '';
+
+    const counts = CATS.map(c => bins[c.id].length);
+    const biggest = Math.max(...counts, 1);
+    const scale = MAX_H / biggest;
+
+    CATS.forEach((cat, i) => {
+      const count = counts[i];
+
+      const col = document.createElement('div');
+      col.className = 'col';
+
+      const countEl = document.createElement('div');
+      countEl.className = 'count';
+      countEl.textContent = count;
+
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.background = cat.color;
+      bar.style.height = '0px';
+
+      col.appendChild(countEl);
+      col.appendChild(bar);
+      plotEl.appendChild(col);
+
+      const target = count === 0 ? 0 : Math.max(count * scale, 10);
+      setTimeout(() => { bar.style.height = target + 'px'; }, 80 + i * 140);
+
+      const label = document.createElement('div');
+      label.textContent = cat.emoji;
+      labelsEl.appendChild(label);
+    });
+
+    const winners = CATS.filter((c, i) => counts[i] === biggest && biggest > 0);
+    if (winners.length === 1) {
+      graphNote.textContent = `🏆 The tallest bar is ${winners[0].name} with ${biggest}!`;
+    } else {
+      graphNote.textContent =
+        `🏆 There is a tie! ${winners.map(w => w.name).join(' and ')} have ${biggest}.`;
+    }
+
+    hintEl.textContent = 'You counted correctly! 🎉';
+    graphCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function goNextSet() {
+    if (currentSet < TOTAL_SETS) {
+      currentSet++;
+      newSet();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      showFinale();
+    }
+  }
+
+  function showFinale() {
+    boardEl.hidden = true;
+    actionsEl.hidden = true;
+    countCard.hidden = true;
+    graphCard.hidden = true;
+    finaleCard.hidden = false;
+    hintEl.textContent = '';
+    setinfoEl.textContent = 'All 4 sets complete!';
+    finaleCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function playAgain() {
+    completedSets = new Array(TOTAL_SETS).fill(false);
+    currentSet = 1;
+    newSet();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  graphBtn.addEventListener('click', checkAndGraph);
+  newBtn.addEventListener('click', newSet);
+  nextBtn.addEventListener('click', goNextSet);
+  document.getElementById('playAgainBtn').addEventListener('click', playAgain);
+</script>
+
+</body>
+</html>
